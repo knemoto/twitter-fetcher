@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <meta http-equiv="Content-Language" content="ja" />
+      <meta http-equiv="Content-Script-Type" content="text/javascript" />
+      <meta http-equiv="Content-Style-Type" content="text/css" />
+      <meta http-equiv="imagetoolbar" content="no" />
+      <title>Twitter REST API：タイムライン関連：user_timeline（指定したユーザーのタイムラインを取得） | 設置サンプル</title>
+      <link rel="stylesheet" type="text/css" href="lib/global.css" />
+      <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+      <!-- JS -->
+      <script type="text/javascript">
+         $(function(){
+            $("#frmSearch").submit(function(){
+				search($("#keyword").val());
+				return false;
+			});
+		});
+		function search(keyword) {
+		    //公式RT含む
+            var url="http://api.twitter.com/1/statuses/user_timeline.json?screen_name=" + keyword + "&include_rts=1";
+            $.getJSON(url + "&callback=?", function(json){
+               var s = "";
+               $.each(json, function(i, items) {
+                  s += "<li>";
+				  s += "<p>" + items.user.name + "</p>";
+				  s += "<p>" +  items.text + "</p>";
+				  s += "</li>";
+                });
+                $("#recent").html("<ul>" + s + "</ul>");
+            });
+         }
+      </script>
+      <style type="text/css">
+         #recent div {
+            font-size:80%;
+            color:
+         }
+         #recent ul {
+            list-style:none;
+            border-top:1px dotted #ccc;
+            margin:0; padding:0;
+         }
+         #recent li {
+            border-bottom:1px dotted #ccc;
+            list-style:none;
+            clear:both;
+            overflow:hidden;
+            margin:0; padding:5px 0;
+         }
+         #recent a.prof {
+            float:left;
+            width:48px; height:48px;
+            overflow:hidden;
+            margin:0; padding:3px 0;
+         }
+         #recent p {
+            margin:0; padding:0;
+         }
+         #recent div {
+            margin:0 0 0 58px; padding:0;
+         }
+         #recent p.footer,
+         #recent p.rt {
+            color:#666;
+            margin-top:5px;
+         }
+         #recent p.rt {
+            background:transparent url('img/topic/twitter/rt.gif') no-repeat 0 0;
+            overflow:hidden;
+            padding-left:16px;
+            min-height:15px;
+            height:auto!important;
+            height:15px;
+         }
+      </style>
+   </head>
+   <body>
+      <div id="wrap">
+         <form id="frmSearch">
+  			<input type="text" id="keyword">
+  			<input type="submit" value="検索">
+		</form>
+<!-- CODE -->
+         <div id="recent"></div>
+<!-- / CODE -->
+      </div>
+   </body>
+</html>
