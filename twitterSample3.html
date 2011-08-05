@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <meta http-equiv="Content-Language" content="ja" />
+      <meta http-equiv="Content-Script-Type" content="text/javascript" />
+      <meta http-equiv="Content-Style-Type" content="text/css" />
+      <meta http-equiv="imagetoolbar" content="no" />
+      <title>Twitter REST API：タイムライン関連：user_timeline（指定したユーザーのタイムラインを取得） | 設置サンプル</title>
+      
+      <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+      <!--Load the Google Chart AJAX API-->
+      <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+      <!-- JS -->
+      <script type="text/javascript">
+        $(function(){
+        	$("#chart-div").empty();
+            $("#frmSearch").submit(function(){
+				search($("#keyword").val());
+				return false;
+			});
+		});
+		var str = "";
+		var s = "";
+		var tweetType = new Array(3);
+		function search(keyword) {
+			var arr = new Array();
+			
+			tweetType["rt"] = 0; // RTした回数をカウント
+			tweetType["reply"] = 0;  // @した回数をカウント
+			tweetType["tweet"] = 0; // 普通のtweet回数
+			//公式RT含む
+			var i = 1;
+			while(i < 3) {
+				console.log(i);
+	        	var url="http://api.twitter.com/1/statuses/user_timeline.json?screen_name=" + keyword + "&page=" + i + "&include_rts=1";
+	            getData(url, tweetType);
+	           
+	            console.log(s);
+	            console.log("    ");
+	            str += s + "\n";
+	            console.log(str);
+	            //str += obj[0];
+	            //tweetType = obj[1];
+	           
+	            i++;
+	        }
+	        $("#recent").html("<ul>" + str + "</ul>");
+         }
+         function getData(url, tweetType) {
+         	
+         	console.log(url);
+            $.getJSON(url + "&callback=?", 
+            	function(json){
+		        	$.each(json, function(i, items) {
+		           	  tweetType["tweet"]++;
+		              s += "<li>";
+					  s += "<p>" + items.user.name + "</p>";
+					  if (items.retweeted_status) {
+					  	s += "<p>" + "RT" + "</p>";
+					  	tweetType["rt"]++;
+					  }
+					  if (items.in_reply_to_screen_name) {
+					  	s += "<p>" + "To:" + items.in_reply_to_screen_name + "</p>";
+					  	tweetType["reply"]++;
+					  }
+					  s += "<p>" +  items.text + "</p>";
+					  s += "</li>";
+		            });
+		            console.log(s);
+		            tweetType["tweet"] = tweetType["tweet"] - tweetType["rt"] - tweetType["reply"];
+	   	            console.log(tweetType["tweet"] + " " + tweetType["rt"] + " " + tweetType["reply"]);			
+		            //$("#recent").html("<ul>" + s + "</ul>");
+		            //drawChart(rt, reply, tweet);
+		       }
+            );
+         } 
+         
+        // Load the Visualization API and the piechart package.
+      	google.load('visualization', '1.0', {'packages':['corechart']});
+      
+      	// Set a callback to run when the Google Visualization API is loaded.
+      	google.setOnLoadCallback(drawChart);
+      
+     	// Callback that creates and populates a data table, 
+      	// instantiates the pie chart, passes in the data and
+      	// draws it.
+      	function drawChart(rt, reply, tweet) {
+
+	      	// Create the data table.
+	      	var data = new google.visualization.DataTable();
+	      	data.addColumn('string', 'Tweet type');
+	      	data.addColumn('number', 'times');
+	       	data.addRows([
+	        	['Normal tweet', tweet],
+	        	['RT', rt],
+	        	['@', reply]
+	      	]);
+
+	      	// Set chart options
+	      	var options = {'title':'Tweet types in last 20 tweets',
+	        	             'width':400,
+	            	         'height':300};
+
+		    // Instantiate and draw our chart, passing in some options.
+	      	var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+	      	chart.draw(data, options);
+	   }
+      
+      </script>
+      <style type="text/css">
+         #recent div {
+            font-size:80%;
+            color:
+         }
+         #recent ul {
+            list-style:none;
+            border-top:1px dotted #ccc;
+            margin:0; padding:0;
+         }
+         #recent li {
+            border-bottom:1px dotted #ccc;
+            list-style:none;
+            clear:both;
+            overflow:hidden;
+            margin:0; padding:5px 0;
+         }
+         #recent a.prof {
+            float:left;
+            width:48px; height:48px;
+            overflow:hidden;
+            margin:0; padding:3px 0;
+         }
+         #recent p {
+            margin:0; padding:0;
+         }
+         #recent div {
+            margin:0 0 0 58px; padding:0;
+         }
+         #recent p.footer,
+         #recent p.rt {
+            color:#666;
+            margin-top:5px;
+         }
+         #recent p.rt {
+            background:transparent url('img/topic/twitter/rt.gif') no-repeat 0 0;
+            overflow:hidden;
+            padding-left:16px;
+            min-height:15px;
+            height:auto!important;
+            height:15px;
+         }
+      </style>
+   </head>
+   <body>
+      <div id="wrap">
+         <form id="frmSearch">
+  			<input type="text" id="keyword">
+  			<input type="submit" value="検索">
+		</form>
+		<!-- CODE -->
+		<!--Div that will hold the pie chart-->
+    	<div id="chart_div"></div>
+        <div id="recent"></div>
+		<!-- / CODE -->
+      </div>
+   </body>
+</html>
